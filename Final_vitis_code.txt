@@ -1,0 +1,168 @@
+#include "PmodBLE.h"       //pmod bluetooth library
+#include "bitmap.h"
+#include "PmodOLEDrgb.h"  // pmod oled library
+#include "sleep.h"        // c code delay library
+#include "xil_cache.h"
+#include "xparameters.h"   // vitis primary library
+#include "xil_types.h"
+#include "xil_io.h"
+#include "PmodACL.h"      // pmod acl library
+#include <stdio.h>
+#include <stdlib.h>
+
+
+#ifdef __MICROBLAZE__
+#include "xuartlite.h"
+typedef XUartLite SysUart;
+#define SysUart_Send            XUartLite_Send
+#define SysUart_Recv            XUartLite_Recv
+#define SYS_UART_DEVICE_ID      XPAR_AXI_UARTLITE_0_DEVICE_ID
+#define BLE_UART_AXI_CLOCK_FREQ XPAR_CPU_M_AXI_DP_FREQ_HZ
+#else
+#include "xuartps.h"
+typedef XUartPs SysUart;
+#define SysUart_Send            XUartPs_Send
+#define SysUart_Recv            XUartPs_Recv
+#define SYS_UART_DEVICE_ID      XPAR_PS7_UART_1_DEVICE_ID
+#define BLE_UART_AXI_CLOCK_FREQ 1000000
+#endif
+
+PmodBLE bluetooth;        //pmod bluetooth declration
+SysUart myUart;           // uart for bluetooth module
+PmodOLEDrgb oledrgb;      // pmod oled declaration
+PmodACL ACL;             // pmod acl declaration
+
+void Initialize();
+void mainlogic();
+void SysUartInit();
+void EnableCaches();
+void DisableCaches();
+
+int main()
+{
+    Initialize();
+    mainlogic();
+    DisableCaches();
+    return XST_SUCCESS;
+}
+
+void Initialize()
+{
+    EnableCaches();          //enable cache data from microblaze
+    SysUartInit();           // initialize uart for bluetooth
+    BLE_Begin (              // blue tooth initialization
+        &bluetooth,
+        XPAR_PMODBLE_0_S_AXI_GPIO_BASEADDR,
+        XPAR_PMODBLE_0_S_AXI_UART_BASEADDR,
+        BLE_UART_AXI_CLOCK_FREQ,
+        115200
+    );
+    OLEDrgb_begin(&oledrgb, XPAR_PMODOLEDRGB_0_AXI_LITE_GPIO_BASEADDR,  // initialize oled display
+             XPAR_PMODOLEDRGB_0_AXI_LITE_SPI_BASEADDR);
+
+       ACL_begin(&ACL, XPAR_PMODACL_0_AXI_LITE_GPIO_BASEADDR,XPAR_PMODACL_0_AXI_LITE_SPI_BASEADDR);
+       	SetMeasure(&ACL, FALSE);                     // initialize ACL module
+       	SetGRange(&ACL, PAR_GRANGE_PM4G);
+       	SetMeasure(&ACL, TRUE);
+       	CalibrateOneAxisGravitational(&ACL, PAR_AXIS_ZP);
+}
+
+void mainlogic()
+{
+	 float x;     // variable for x axis location
+	 float y;       // variable for y axis location
+	 float z;      // variable for z axis location
+     int i = 0;
+    char stringConvertX[12];        // convert float x value to a string
+       char stringConvertY[12];
+       char stringConvertZ[12];
+
+    while(1) {
+        ReadAccelG(&ACL, &x, &y, &z);     // read x, y, z values from pmod acl
+        	   sprintf(stringConvertX ,"%f", x);   // conversion of float x to string
+        	   sprintf(stringConvertY ,"%f", y);
+        	   sprintf(stringConvertZ ,"%f", z);
+
+        	   usleep(10000);
+           OLEDrgb_SetCursor(&oledrgb, 0, 0);         // setting the location for the cursor on first line, first alphabet
+           OLEDrgb_SetFontColor(&oledrgb, OLEDrgb_BuildRGB(0,255, 0));  // choose color, red
+           OLEDrgb_PutString(&oledrgb, "X=");
+           OLEDrgb_PutString(&oledrgb, stringConvertX);            // print the x component value on the oled display
+
+           usleep(1000);
+
+           OLEDrgb_SetCursor(&oledrgb, 0, 2);         //setting the cursor on the second line, first alphabet position
+           OLEDrgb_SetFontColor(&oledrgb, OLEDrgb_BuildRGB(0, 0, 255)); // green color
+           OLEDrgb_PutString(&oledrgb, "Y=");
+           OLEDrgb_PutString(&oledrgb, stringConvertY);
+
+           usleep(1000);
+
+           OLEDrgb_SetFontColor(&oledrgb, OLEDrgb_BuildRGB(255, 0, 0));
+           OLEDrgb_SetCursor(&oledrgb, 0, 4);
+           OLEDrgb_PutString(&oledrgb, "Z=");
+           OLEDrgb_PutString(&oledrgb, stringConvertZ);
+
+           usleep(1000);
+           i = i + 1;
+
+           if (i == 10){
+           BLE_SendData(&bluetooth, "X= ", 3);
+           usleep(1000);
+           BLE_SendData(&bluetooth, stringConvertX, 8);       // send x component value over bluetooth
+           usleep(1000);
+           BLE_SendData(&bluetooth, "___", 3);
+           usleep(1000);
+
+           BLE_SendData(&bluetooth, "Y= ", 3);
+           usleep(1000);
+           BLE_SendData(&bluetooth, stringConvertY, 8);      // send y component value over bluetooth
+           usleep(1000);
+           BLE_SendData(&bluetooth, "___", 3);
+           usleep(1000);
+
+           BLE_SendData(&bluetooth, "Z= ", 3);
+           usleep(1000);
+           BLE_SendData(&bluetooth, stringConvertZ, 8);       // send z component value over bluetooth
+           usleep(1000);
+           BLE_SendData(&bluetooth, "___", 3);
+           usleep(1000);
+           i = 0;
+           }
+    }
+}
+
+void SysUartInit()
+{
+#ifdef __MICROBLAZE__
+    XUartLite_Initialize(&myUart, SYS_UART_DEVICE_ID);
+#else
+    XUartPs_Config *myUartCfgPtr;
+    myUartCfgPtr = XUartPs_LookupConfig(SYS_UART_DEVICE_ID);
+    XUartPs_CfgInitialize(&myUart, myUartCfgPtr, myUartCfgPtr->BaseAddress);
+#endif
+}
+
+void EnableCaches()
+{
+#ifdef __MICROBLAZE__
+#ifdef XPAR_MICROBLAZE_USE_ICACHE
+    Xil_ICacheEnable();
+#endif
+#ifdef XPAR_MICROBLAZE_USE_DCACHE
+    Xil_DCacheEnable();
+#endif
+#endif
+}
+
+void DisableCaches()
+{
+#ifdef __MICROBLAZE__
+#ifdef XPAR_MICROBLAZE_USE_DCACHE
+    Xil_DCacheDisable();
+#endif
+#ifdef XPAR_MICROBLAZE_USE_ICACHE
+    Xil_ICacheDisable();
+#endif
+#endif
+}
