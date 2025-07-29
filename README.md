@@ -1,38 +1,55 @@
-# Project_Work_Yashodhan_Deshpande
+# 🚀 Dynamic Motion Sensing System – Project Work
 
-**Repository:** Project_Work_Yashodhan_Deshpande  
-**Owner:** Yashodhandesh  
-
----
-
-## 📘 Overview
-
-This project repository contains all final deliverables of a hardware–software hands-on implementation developed using Xilinx Vivado and Vitis tools. It includes source code, documentation, presentations, and FPGA bitstreams.
+**Author:** Yashodhan Vishvesh Deshpande  
+**Degree:** B.Eng. in Electronics Engineering  
+**Institution:** Hochschule Hamm-Lippstadt, Germany  
+**Supervisor:** Prof. Dr.-Ing. Ali Hayek  
+**Completion Date:** 25 August 2024  
 
 ---
 
-## 🔗 External Resources
+## 📘 Project Overview
 
-- A complete archive (Vivado & Vitis implementation) is available via Google Drive:  
-  https://drive.google.com/file/d/1eFonqv2SfjiLCx7hkm8LaXCC8C919VRm/view?usp=drive_link :contentReference[oaicite:1]{index=1}
+This project implements a real-time **Dynamic Motion Sensing System** using FPGA-based hardware and embedded software. It integrates a 3-axis accelerometer with a MicroBlaze soft-core processor and communicates results via Bluetooth and an OLED RGB display.
 
----
-
-## 🗄️ Repository Structure
-
-- `helloworld.c` – Main C code for Vitis (found in the Vitis “helloworld” project folder).  
-- `Final_vitis_code.txt` – Plain-text version of the Vitis project code.  
-- `Yashodhan_Vishvesh_Deshpande_ProjectWork_Documentation_2024.pdf` – Detailed project documentation.  
-- `Yashodhan_Vishvesh_Deshpande_ProjectWork_Presentation_2024.pdf` & `.pptx` – Slides for project presentation.  
-- `ip.zip` – IP core packages used in the design.  
+The project was developed using the **Xilinx Vivado 2023.1** and **Vitis Unified Software Platform**, targeting the **Digilent Nexys A7-100T** development board.
 
 ---
 
-## ⚙️ Setup & Usage
+## 🔍 Objectives
 
-### Prerequisites
+- Design a motion sensing embedded system using Pmod modules  
+- Interface sensors (Pmod ACL) and actuators (OLED RGB, BLE) via SPI/UART  
+- Implement custom logic on MicroBlaze soft processor  
+- Transmit real-time sensor data to OLED and Bluetooth terminal  
+- Analyze FPGA resource usage, power, and timing performance  
 
-- Xilinx Vivado (version X.X or later)  
-- Xilinx Vitis (version X.X or later)  
-- Supported FPGA board (e.g., Zynq‑7000 series, Versal, etc.)  
+---
 
+## 🧩 System Architecture
+
+**Inputs:**  
+- 📟 Pmod ACL – 3-axis Accelerometer (SPI)
+
+**Processing Node:**  
+- 🧠 Nexys A7-100T FPGA Board with MicroBlaze processor
+
+**Outputs:**  
+- 🖥️ Pmod OLED RGB Display (SPI)  
+- 📶 Pmod BLE Bluetooth Module (UART)
+
+**Software Stack:**  
+- HDL: Vivado block design using IP integrator  
+- Firmware: C-based logic using Vitis SDK  
+- Communication: SPI (OLED, ACL), UART (BLE)
+
+---
+
+## 🗂️ Repository Structure
+.
+├── helloworld.c # Main C source code for Vitis
+├── Final_vitis_code.txt # Code summary in text format
+├── ip.zip # IP cores for Vivado block design
+├── Yashodhan_Vishvesh_Deshpande_ProjectWork_Documentation_2024.pdf
+├── Yashodhan_Vishvesh_Deshpande_ProjectWork_Presentation_2024.pdf
+└── Yashodhan_Vishvesh_Deshpande_ProjectWork_Presentation_2024.pptx
