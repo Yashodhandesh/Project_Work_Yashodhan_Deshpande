@@ -53,3 +53,8 @@ The project was developed using the **Xilinx Vivado 2023.1** and **Vitis Unified
 ├── Yashodhan_Vishvesh_Deshpande_ProjectWork_Documentation_2024.pdf
 ├── Yashodhan_Vishvesh_Deshpande_ProjectWork_Presentation_2024.pdf
 └── Yashodhan_Vishvesh_Deshpande_ProjectWork_Presentation_2024.pptx
+
+## 🔗 External Resources
+
+- A complete archive (Vivado & Vitis implementation) is available via Google Drive:  
+  https://drive.google.com/file/d/1eFonqv2SfjiLCx7hkm8LaXCC8C919VRm/view?usp=drive_link :contentReference[oaicite:1]{index=1}
